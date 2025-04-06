@@ -1,4 +1,6 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RobotMotion {
     private int x, y;
@@ -41,6 +43,8 @@ public class RobotMotion {
     }
 
     public void move(int steps) {
+        if (steps < 0) return;
+
         for (int i = 0; i < steps; i++) {
             if (penDown) floor[y][x] = 1;
             switch (direction) {
@@ -59,17 +63,35 @@ public class RobotMotion {
 
     public void printFloor() {
         for (int i = floor.length - 1; i >= 0; i--) {
-            System.out.print(i + " "); // Print row number
+            System.out.print(i + " ");
             for (int j = 0; j < floor[i].length; j++) {
                 System.out.print(floor[i][j] == 1 ? "* " : "  ");
             }
             System.out.println();
         }
-        System.out.print("  "); // Indent for column numbers
+        System.out.print("  ");
         for (int j = 0; j < floor.length; j++) {
             System.out.print(j + " ");
         }
         System.out.println();
+    }
+
+    // For testing
+    public String getFloorAsString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = floor.length - 1; i >= 0; i--) {
+            sb.append(i).append(" ");
+            for (int j = 0; j < floor[i].length; j++) {
+                sb.append(floor[i][j] == 1 ? "* " : "  ");
+            }
+            sb.append("\n");
+        }
+        sb.append("  ");
+        for (int j = 0; j < floor.length; j++) {
+            sb.append(j).append(" ");
+        }
+        sb.append("\n");
+        return sb.toString();
     }
 
     public int getX() {
@@ -91,29 +113,60 @@ public class RobotMotion {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         RobotMotion robot = null;
+        List<String> history = new ArrayList<>();
 
         while (true) {
             System.out.println("Enter command:");
             String command = scanner.nextLine().toUpperCase();
 
+
+            if (!command.equals("H")) {
+                history.add(command);
+            }
+
             if (command.startsWith("I ")) {
-                int size = Integer.parseInt(command.split(" ")[1]);
-                robot = new RobotMotion(size);
-                System.out.println("Initialized " + size + "x" + size + " grid.");
+                try {
+                    int size = Integer.parseInt(command.split(" ")[1]);
+                    robot = new RobotMotion(size);
+                    System.out.println("Initialized " + size + "x" + size + " grid.");
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid grid size.");
+                }
             } else if (robot == null) {
                 System.out.println("Error: Initialize grid first using 'I size'.");
             } else {
-                if (command.equals("Q")) break;
-                else if (command.equals("U")) robot.penUp();
-                else if (command.equals("D")) robot.penDown();
-                else if (command.equals("R")) robot.turnRight();
-                else if (command.equals("L")) robot.turnLeft();
-                else if (command.startsWith("M ")) robot.move(Integer.parseInt(command.split(" ")[1]));
-                else if (command.equals("C")) robot.printPosition();
-                else if (command.equals("P")) robot.printFloor();
-                else System.out.println("Invalid command.");
+                if (command.equals("Q")) {
+                    break;
+                } else if (command.equals("U")) {
+                    robot.penUp();
+                } else if (command.equals("D")) {
+                    robot.penDown();
+                } else if (command.equals("R")) {
+                    robot.turnRight();
+                } else if (command.equals("L")) {
+                    robot.turnLeft();
+                } else if (command.startsWith("M ")) {
+                    try {
+                        int steps = Integer.parseInt(command.split(" ")[1]);
+                        robot.move(steps);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid move value.");
+                    }
+                } else if (command.equals("C")) {
+                    robot.printPosition();
+                } else if (command.equals("P")) {
+                    robot.printFloor();
+                } else if (command.equals("H")) {
+                    System.out.println("Command History:");
+                    for (String pastCommand : history) {
+                        System.out.println("> " + pastCommand);
+                    }
+                } else {
+                    System.out.println("Invalid command.");
+                }
             }
         }
-        scanner.close();
-    }}
 
+        scanner.close();
+    }
+}
